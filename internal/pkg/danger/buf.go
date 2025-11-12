@@ -10,6 +10,7 @@ package danger
 
 import (
 	"unicode/utf8"
+	"math"
 )
 
 type Buf struct {
@@ -33,7 +34,11 @@ func (b *Buf) Reset() {
 }
 
 func (b *Buf) grow(n int) {
-	buf := make([]byte, len(b.buf), 2*cap(b.buf)+n)
+	totalCap := 2*cap(b.buf) + n
+	if totalCap < 0 || totalCap > math.MaxInt {
+		panic("danger.Buf.grow: buffer size computation would overflow")
+	}
+	buf := make([]byte, len(b.buf), totalCap)
 	copy(buf, b.buf)
 	b.buf = buf
 }
